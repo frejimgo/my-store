@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "my-store",
+      "runtimeExecutable": "/opt/anaconda3/bin/python3",
+      "runtimeArgs": ["-m", "http.server", "3456", "--directory", "/Users/Frejimgo/Library/Mobile Documents/com~apple~CloudDocs/Claude Code Projects/my-store"],
+      "port": 3456
+    }
+  ]
+}
