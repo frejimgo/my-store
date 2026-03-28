@@ -174,16 +174,6 @@ const PRODUCTS = [
     condition: "Buen estado",
     sold: false,
   },
-  {
-    id: 17,
-    name: "Test Product 001",
-    category: "Otros",
-    price: 125,
-    image: "https://res.cloudinary.com/dhrogze8x/image/upload/v1774284269/samples/ecommerce/analog-classic.jpg",
-    description: "Test Product from new web form",
-    condition: "Nuevo",
-    sold: false,
-  },
 ];
 
 // ============================================================
