@@ -82,7 +82,7 @@ const PRODUCTS = [
     image: "https://res.cloudinary.com/dhrogze8x/image/upload/v1774286402/IMG_1234_x3r67m.jpg",
     description: "Salveque 5.11 Rush 72, buen estado, kit de compresion extra.",
     condition: "Good",
-    sold: false,
+    sold: true,
   },
   {
     id: 8,
@@ -152,7 +152,7 @@ const PRODUCTS = [
     image: "https://res.cloudinary.com/dhrogze8x/image/upload/v1774285320/IMG_1223_rkxvzk.jpg",
     description: "Se usa como un dog tag al cuello, super portable",
     condition: "Excelente estado",
-    sold: false,
+    sold: true,
   },
   {
     id: 15,

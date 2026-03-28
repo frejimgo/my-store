@@ -159,14 +159,15 @@ function renderGrid() {
 
     return `
       <div class="card ${p.sold ? "sold-card" : ""}">
-        <div class="card-img-wrap">
+        <div class="card-img-wrap" onclick="openDetail(${p.id})" style="cursor:pointer">
           <img src="${imgSrc}" alt="${escHtml(p.name)}" loading="lazy" onerror="this.src='https://via.placeholder.com/600x450?text=No+Image'" />
           <span class="condition-tag">${escHtml(p.condition)}</span>
           ${p.sold ? '<div class="sold-badge">SOLD</div>' : ""}
+          <div class="view-hint">Ver foto</div>
         </div>
         <div class="card-body">
           <span class="card-category">${escHtml(p.category)}</span>
-          <h2 class="card-name">${escHtml(p.name)}</h2>
+          <h2 class="card-name card-name-link" onclick="openDetail(${p.id})">${escHtml(p.name)}</h2>
           <p class="card-desc">${escHtml(p.description)}</p>
         </div>
         <div class="card-footer">
@@ -235,6 +236,48 @@ function renderCartPage() {
   if (totalEl) totalEl.textContent = `$${total.toLocaleString()}`;
 }
 
+/* ---- Product Detail View ---- */
+function openDetail(id) {
+  const p = PRODUCTS.find(pr => pr.id === id);
+  if (!p) return;
+
+  const imgSrc = p.image || "https://via.placeholder.com/600x450?text=No+Image";
+  document.getElementById("detailImg").src        = imgSrc;
+  document.getElementById("detailImg").alt        = p.name;
+  document.getElementById("detailCondition").textContent = p.condition;
+  document.getElementById("detailCategory").textContent  = p.category;
+  document.getElementById("detailName").textContent      = p.name;
+  document.getElementById("detailDesc").textContent      = p.description;
+  document.getElementById("detailPrice").textContent     = `$${p.price.toLocaleString()}`;
+
+  const cart = getCart();
+  const inCart = cart.includes(p.id);
+  let actionsHtml;
+  if (p.sold) {
+    actionsHtml = `<span class="btn-sold">Sold</span>`;
+  } else {
+    const cartBtn = inCart
+      ? `<button class="btn-add in-cart" disabled>En Carrito ✓</button>`
+      : `<button class="btn-add" onclick="addToCart(${p.id})">+ Carrito</button>`;
+    actionsHtml = `
+      <button class="btn-buy" onclick="openBuyModal(${p.id})">Comprar</button>
+      ${cartBtn}`;
+  }
+  document.getElementById("detailActions").innerHTML = actionsHtml;
+
+  const overlay = document.getElementById("detailOverlay");
+  overlay.classList.add("open");
+  document.body.style.overflow = "hidden";
+  overlay.scrollTop = 0;
+}
+
+function closeDetail() {
+  document.getElementById("detailOverlay").classList.remove("open");
+  document.body.style.overflow = "";
+}
+
+// Close detail on Escape (handled alongside modal below)
+
 /* ---- Buy Now Modal ---- */
 const PAYMENT_ICONS = {
   "Sinpe":                 { code: "sinpe",    label: "SINPE",  icon: "💳" },
@@ -294,7 +337,10 @@ function closeBuyModal(e) {
 
 // Close on Escape key
 document.addEventListener("keydown", e => {
-  if (e.key === "Escape") closeBuyModalDirect();
+  if (e.key === "Escape") {
+    closeBuyModalDirect();
+    closeDetail();
+  }
 });
 
 /* ---- Utility ---- */
