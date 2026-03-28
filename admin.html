@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin — Fred's Store</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --brand:    #2563eb;
+      --brand-dk: #1d4ed8;
+      --accent:   #f59e0b;
+      --bg:       #f8fafc;
+      --surface:  #ffffff;
+      --border:   #e2e8f0;
+      --text:     #1e293b;
+      --muted:    #64748b;
+      --danger:   #ef4444;
+      --success:  #22c55e;
+      --font:     'Inter', system-ui, -apple-system, sans-serif;
+      --shadow:   0 2px 8px rgba(0,0,0,.08);
+    }
+    html { color-scheme: light; }
+    body { font-family: var(--font); background: var(--bg); color: var(--text); line-height: 1.6; min-height: 100vh; }
+    a { color: inherit; text-decoration: none; }
+    img { display: block; max-width: 100%; }
+    button { font-family: inherit; cursor: pointer; border: none; }
+
+    /* ===== LOGIN ===== */
+    #loginScreen {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+    }
+    .login-card {
+      background: var(--surface);
+      border-radius: 20px;
+      padding: 2.5rem;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.3);
+    }
+    .login-logo { font-size: 1.5rem; font-weight: 800; color: var(--brand); margin-bottom: .2rem; }
+    .login-logo span { color: var(--text); }
+    .login-sub { font-size: .875rem; color: var(--muted); margin-bottom: 2rem; }
+
+    .field-label {
+      display: block;
+      font-size: .78rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      margin-bottom: .4rem;
+    }
+    .login-card input {
+      width: 100%;
+      padding: .75rem 1rem;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      font-family: var(--font);
+      font-size: .95rem;
+      color: var(--text);
+      background: var(--bg);
+      margin-bottom: 1.1rem;
+      transition: border-color .15s;
+    }
+    .login-card input:focus { outline: none; border-color: var(--brand); background: #fff; }
+    .token-hint {
+      font-size: .78rem;
+      color: var(--muted);
+      margin-top: -.7rem;
+      margin-bottom: 1.1rem;
+      line-height: 1.5;
+    }
+    .token-hint a { color: var(--brand); }
+    .btn-login {
+      width: 100%;
+      padding: .85rem;
+      background: var(--brand);
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 700;
+      border-radius: 10px;
+      transition: background .15s;
+    }
+    .btn-login:hover { background: var(--brand-dk); }
+    #loginError {
+      margin-top: .8rem;
+      padding: .6rem .9rem;
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      border-radius: 8px;
+      color: var(--danger);
+      font-size: .875rem;
+      display: none;
+    }
+
+    /* ===== ADMIN PANEL ===== */
+    #adminPanel { display: none; }
+
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: var(--shadow);
+    }
+    .header-inner {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: .85rem 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .logo { font-size: 1.15rem; font-weight: 800; color: var(--brand); }
+    .logo span { color: var(--text); }
+    .header-links { display: flex; align-items: center; gap: 1rem; }
+    .badge-admin {
+      background: var(--accent);
+      color: #fff;
+      font-size: .7rem;
+      font-weight: 700;
+      padding: .2rem .55rem;
+      border-radius: 20px;
+      letter-spacing: .04em;
+    }
+    .header-links a, .btn-signout {
+      font-size: .875rem;
+      font-weight: 600;
+      color: var(--muted);
+      background: none;
+      transition: color .15s;
+    }
+    .header-links a:hover, .btn-signout:hover { color: var(--text); }
+
+    main { max-width: 860px; margin: 2rem auto; padding: 0 1.25rem 5rem; }
+
+    .page-title { font-size: 1.5rem; font-weight: 800; margin-bottom: .2rem; }
+    .page-sub { color: var(--muted); font-size: .9rem; margin-bottom: 1.75rem; }
+
+    .form-card {
+      background: var(--surface);
+      border-radius: 16px;
+      padding: 2rem;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+    }
+
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+    @media (max-width: 580px) { .form-grid { grid-template-columns: 1fr; } }
+
+    .form-group { display: flex; flex-direction: column; gap: .4rem; }
+    .form-group.full { grid-column: 1 / -1; }
+
+    .form-group label {
+      font-size: .78rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .05em;
+    }
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: .7rem 1rem;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      font-family: var(--font);
+      font-size: .95rem;
+      color: var(--text);
+      background: var(--bg);
+      transition: border-color .15s;
+    }
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus { outline: none; border-color: var(--brand); background: #fff; }
+    .form-group textarea { resize: vertical; min-height: 90px; }
+
+    .img-preview-wrap {
+      border: 1.5px dashed var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      background: var(--bg);
+      min-height: 130px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: .5rem;
+    }
+    .img-preview-wrap img { max-height: 220px; width: 100%; object-fit: contain; }
+    .img-placeholder { color: var(--muted); font-size: .85rem; text-align: center; padding: 1.5rem; }
+
+    .checkbox-row {
+      display: flex;
+      align-items: center;
+      gap: .6rem;
+      padding: .7rem 1rem;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      background: var(--bg);
+      height: 100%;
+    }
+    .checkbox-row input[type="checkbox"] {
+      width: 18px; height: 18px;
+      accent-color: var(--brand);
+      padding: 0; border: none; background: none;
+    }
+    .checkbox-row span { font-size: .95rem; color: var(--text); }
+
+    .btn-submit {
+      width: 100%;
+      padding: .9rem;
+      background: var(--brand);
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 700;
+      border-radius: 10px;
+      transition: background .15s, transform .1s;
+      margin-top: 1.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: .5rem;
+    }
+    .btn-submit:hover { background: var(--brand-dk); }
+    .btn-submit:active { transform: scale(.98); }
+    .btn-submit:disabled { background: var(--muted); cursor: not-allowed; transform: none; }
+
+    #statusMsg {
+      margin-top: 1rem;
+      padding: .85rem 1rem;
+      border-radius: 10px;
+      font-size: .9rem;
+      font-weight: 600;
+      display: none;
+      line-height: 1.5;
+    }
+    #statusMsg.success { background: #f0fdf4; border: 1px solid #bbf7d0; color: #15803d; }
+    #statusMsg.error   { background: #fef2f2; border: 1px solid #fecaca; color: var(--danger); }
+
+    .spinner {
+      width: 18px; height: 18px;
+      border: 2.5px solid rgba(255,255,255,.35);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+      display: none;
+      flex-shrink: 0;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+<!-- ===== LOGIN SCREEN ===== -->
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="login-logo">Fred's <span>Store</span></div>
+    <p class="login-sub">Admin Panel — sign in to continue</p>
+
+    <label class="field-label" for="inputUser">Username</label>
+    <input type="text" id="inputUser" placeholder="Admin" autocomplete="username" />
+
+    <label class="field-label" for="inputPass">Password</label>
+    <input type="password" id="inputPass" placeholder="••••••••" autocomplete="current-password" />
+
+    <label class="field-label" for="inputToken">GitHub Token</label>
+    <input type="password" id="inputToken" placeholder="ghp_..." autocomplete="off" />
+    <p class="token-hint">Only needed on first login. Saved locally in this browser.<br>
+      <a href="https://github.com/settings/tokens" target="_blank" rel="noopener">Generate a token →</a> (needs <strong>repo</strong> scope)
+    </p>
+
+    <button class="btn-login" onclick="login()">Sign In</button>
+    <div id="loginError">Incorrect username or password.</div>
+  </div>
+</div>
+
+<!-- ===== ADMIN PANEL ===== -->
+<div id="adminPanel">
+  <header>
+    <div class="header-inner">
+      <span class="logo">Fred's <span>Store</span></span>
+      <div class="header-links">
+        <span class="badge-admin">ADMIN</span>
+        <a href="index.html" target="_blank" rel="noopener">View Store →</a>
+        <button class="btn-signout" onclick="logout()">Sign Out</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <h1 class="page-title">Add New Product</h1>
+    <p class="page-sub">Fill out the form and hit Save. The store updates automatically in ~30 seconds.</p>
+
+    <div class="form-card">
+      <div class="form-grid">
+
+        <div class="form-group full">
+          <label for="fName">Product Name *</label>
+          <input type="text" id="fName" placeholder="e.g. Sony WH-1000XM3" />
+        </div>
+
+        <div class="form-group">
+          <label for="fCategory">Category *</label>
+          <select id="fCategory">
+            <option value="">— Select —</option>
+            <option value="Electronicos">Electronicos</option>
+            <option value="Filos">Filos</option>
+            <option value="Otros">Otros</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="fCondition">Condition *</label>
+          <select id="fCondition">
+            <option value="">— Select —</option>
+            <option value="Nuevo">Nuevo</option>
+            <option value="Excelente estado">Excelente estado</option>
+            <option value="Muy buen estado">Muy buen estado</option>
+            <option value="Buen estado">Buen estado</option>
+            <option value="Usado">Usado</option>
+            <option value="Good">Good</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="fPrice">Price (USD) *</label>
+          <input type="number" id="fPrice" placeholder="50" min="0" step="1" />
+        </div>
+
+        <div class="form-group">
+          <label>Status</label>
+          <div class="checkbox-row">
+            <input type="checkbox" id="fSold" />
+            <span>Mark as Sold</span>
+          </div>
+        </div>
+
+        <div class="form-group full">
+          <label for="fDesc">Description *</label>
+          <textarea id="fDesc" placeholder="Short description of the product..."></textarea>
+        </div>
+
+        <div class="form-group full">
+          <label for="fImage">Image URL (Cloudinary) *</label>
+          <input type="url" id="fImage" placeholder="https://res.cloudinary.com/..." oninput="previewImage()" />
+          <div class="img-preview-wrap" id="imgPreview">
+            <div class="img-placeholder">Paste a Cloudinary URL above to preview the image</div>
+          </div>
+        </div>
+
+      </div><!-- /form-grid -->
+
+      <button class="btn-submit" id="submitBtn" onclick="submitProduct()">
+        <div class="spinner" id="spinner"></div>
+        <span id="submitLabel">Save Product to Store</span>
+      </button>
+
+      <div id="statusMsg"></div>
+    </div><!-- /form-card -->
+  </main>
+</div>
+
+<script>
+  /* ===== CONFIG ===== */
+  const ADMIN_USER = "Admin";
+  const ADMIN_PASS = "NFf5@X5s9MsEFUz";
+  const GH_OWNER   = "frejimgo";
+  const GH_REPO    = "my-store";
+  const GH_FILE    = "js/products.js";
+
+  /* ===== AUTH ===== */
+  function login() {
+    const user  = document.getElementById("inputUser").value.trim();
+    const pass  = document.getElementById("inputPass").value;
+    const token = document.getElementById("inputToken").value.trim();
+    const err   = document.getElementById("loginError");
+
+    if (user !== ADMIN_USER || pass !== ADMIN_PASS) {
+      err.textContent = "Incorrect username or password.";
+      err.style.display = "block";
+      return;
+    }
+
+    if (token) localStorage.setItem("gh_token", token);
+
+    if (!localStorage.getItem("gh_token")) {
+      err.textContent = "Please enter your GitHub token.";
+      err.style.display = "block";
+      return;
+    }
+
+    err.style.display = "none";
+    sessionStorage.setItem("admin_auth", "1");
+    document.getElementById("loginScreen").style.display = "none";
+    document.getElementById("adminPanel").style.display  = "block";
+  }
+
+  function logout() {
+    sessionStorage.removeItem("admin_auth");
+    document.getElementById("adminPanel").style.display  = "none";
+    document.getElementById("loginScreen").style.display = "flex";
+    document.getElementById("inputPass").value  = "";
+    document.getElementById("inputToken").value = "";
+  }
+
+  // Resume session if already authenticated
+  if (sessionStorage.getItem("admin_auth") && localStorage.getItem("gh_token")) {
+    document.getElementById("loginScreen").style.display = "none";
+    document.getElementById("adminPanel").style.display  = "block";
+  }
+
+  // Hide token hint if already stored
+  if (localStorage.getItem("gh_token")) {
+    document.getElementById("inputToken").placeholder = "Already saved — leave blank to keep";
+  }
+
+  // Submit on Enter from login fields
+  document.addEventListener("keydown", e => {
+    if (e.key === "Enter" && document.getElementById("loginScreen").style.display !== "none") login();
+  });
+
+  /* ===== IMAGE PREVIEW ===== */
+  function previewImage() {
+    const url  = document.getElementById("fImage").value.trim();
+    const wrap = document.getElementById("imgPreview");
+    if (!url) {
+      wrap.innerHTML = '<div class="img-placeholder">Paste a Cloudinary URL above to preview the image</div>';
+      return;
+    }
+    wrap.innerHTML = `<img src="${url}" alt="Preview"
+      onerror="this.parentElement.innerHTML='<div class=\\'img-placeholder\\'>Could not load image — check the URL.</div>'" />`;
+  }
+
+  /* ===== SUBMIT ===== */
+  async function submitProduct() {
+    const name      = document.getElementById("fName").value.trim();
+    const category  = document.getElementById("fCategory").value;
+    const condition = document.getElementById("fCondition").value;
+    const price     = parseInt(document.getElementById("fPrice").value, 10);
+    const sold      = document.getElementById("fSold").checked;
+    const desc      = document.getElementById("fDesc").value.trim();
+    const image     = document.getElementById("fImage").value.trim();
+
+    if (!name || !category || !condition || !price || !desc || !image) {
+      showStatus("Please fill in all required fields.", "error");
+      return;
+    }
+
+    setLoading(true);
+    showStatus("", "");
+
+    try {
+      const token = localStorage.getItem("gh_token");
+
+      // 1. Fetch current products.js
+      const getRes = await fetch(
+        `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${GH_FILE}`,
+        { headers: { Authorization: `token ${token}`, Accept: "application/vnd.github.v3+json" } }
+      );
+      if (!getRes.ok) throw new Error("Could not read products.js from GitHub. Check your token has repo scope.");
+      const fileData = await getRes.json();
+      const currentContent = decodeURIComponent(escape(atob(fileData.content.replace(/\n/g, ""))));
+      const sha = fileData.sha;
+
+      // 2. Determine next ID
+      const idMatches = [...currentContent.matchAll(/id:\s*(\d+)/g)];
+      const maxId = idMatches.length ? Math.max(...idMatches.map(m => parseInt(m[1], 10))) : 0;
+      const newId = maxId + 1;
+
+      // 3. Build product entry string
+      const esc = s => String(s).replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+      const entry = `  {\n    id: ${newId},\n    name: "${esc(name)}",\n    category: "${esc(category)}",\n    price: ${price},\n    image: "${esc(image)}",\n    description: "${esc(desc)}",\n    condition: "${esc(condition)}",\n    sold: ${sold},\n  },\n`;
+
+      // 4. Insert before closing ];
+      const insertAt = currentContent.lastIndexOf("];");
+      if (insertAt === -1) throw new Error("Could not find the end of PRODUCTS array in products.js.");
+      const newContent = currentContent.slice(0, insertAt) + entry + currentContent.slice(insertAt);
+
+      // 5. Commit back to GitHub
+      const putRes = await fetch(
+        `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${GH_FILE}`,
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `token ${token}`,
+            Accept: "application/vnd.github.v3+json",
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            message: `Add product: ${name}`,
+            content: btoa(unescape(encodeURIComponent(newContent))),
+            sha
+          })
+        }
+      );
+      if (!putRes.ok) {
+        const errData = await putRes.json().catch(() => ({}));
+        throw new Error(errData.message || "GitHub commit failed.");
+      }
+
+      showStatus(`Product "${name}" saved! Netlify is deploying — your store will update in ~30 seconds.`, "success");
+      resetForm();
+
+    } catch (err) {
+      showStatus(`Error: ${err.message}`, "error");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function setLoading(on) {
+    document.getElementById("submitBtn").disabled         = on;
+    document.getElementById("spinner").style.display     = on ? "block" : "none";
+    document.getElementById("submitLabel").textContent   = on ? "Saving to store…" : "Save Product to Store";
+  }
+
+  function showStatus(msg, type) {
+    const el = document.getElementById("statusMsg");
+    el.textContent   = msg;
+    el.className     = type;
+    el.style.display = msg ? "block" : "none";
+  }
+
+  function resetForm() {
+    document.getElementById("fName").value  = "";
+    document.getElementById("fDesc").value  = "";
+    document.getElementById("fImage").value = "";
+    document.getElementById("fPrice").value = "";
+    document.getElementById("fCategory").selectedIndex  = 0;
+    document.getElementById("fCondition").selectedIndex = 0;
+    document.getElementById("fSold").checked = false;
+    document.getElementById("imgPreview").innerHTML =
+      '<div class="img-placeholder">Paste a Cloudinary URL above to preview the image</div>';
+  }
+</script>
+</body>
+</html>
